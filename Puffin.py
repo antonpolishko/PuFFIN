@@ -14,30 +14,30 @@ def ReadBED(fileName):
     """
     try:
         #read the input bam file that contains the whole experiment
-        with open(fileName, 'r') as inputFile:
+        with open(fileName, 'rU') as inputFile:
             print "Starting process  file", fileName
             sizes = []
             point = []
             for line in inputFile:
-                try:
-                    read = line.split()
-                    direction = 1 
-                    posLeft = int(read[1])
-                    readSize = abs(int(read[2] - read[1]))
-                    flag = False
-                    if (len(read)>3):
-                        readScore = int(read[3])
-                        flag = True
-                    if (flag) and (readScore > 10): #filter out reads with bad mapping score
+                # try:
+                read = line.split()
+                direction = 1 
+                posLeft = int(read[1])
+                readSize = abs(int(read[2]) - int(read[1]))
+                flag = False
+                if (len(read)>3):
+                    readScore = int(read[3])
+                    flag = True
+                if (flag) and (readScore > 10): #filter out reads with bad mapping score
+                    point.append([posLeft, readSize, direction])
+                    sizes.append(readSize)
+                else:
+                    if (~flag):
                         point.append([posLeft, readSize, direction])
                         sizes.append(readSize)
-                    else:
-                        if (~flag):
-                            point.append([posLeft, readSize, direction])
-                            sizes.append(readSize)
-                except:
-                    print "Failed to read ", fileName
-                    pass
+                # except:
+                #     print "Failed to read ", fileName
+                #     pass
             #appending a set of points of a processed chromosome to the list of all points
         print "Number of points ", len(point)
         return np.array(point), sizes
