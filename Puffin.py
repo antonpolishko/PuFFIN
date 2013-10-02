@@ -454,7 +454,7 @@ def BuildSignals(dataChr, curves=None):
         lx = int(max(x[0], 0))
         ly = int(min(x[0] + x[1], chrSize))
         lxS = max(mu - 500, 0)
-        lxY = - mu - 500 - lxS
+        lxY = - (mu - 500) + lxS
         lyS = min(mu + 499, chrSize)
         lyY = int(mu + 499 - lyS)
         delta = ly - lx
@@ -462,14 +462,14 @@ def BuildSignals(dataChr, curves=None):
         count += 1
         if delta < 1000:
             for i in range(numCurves):
-                signal[i][lxS:lyS + 1] += curves[i][x[2]][lxY:1000 - lyY]
+                signal[i][lxS:lyS + 1] += curves[i][x[1]][lxY:1000 - lyY]
  #               if len(x) > 3:
   #                  probSignal[i][lxS:lyS + 1] += 1.0 * curves[i][x[2]][lxY:1000 - lyY] * x[3]
     #Normalization of the curves by number of processed reads
 #    rawSignal = rawSignal * 1000000 / count
     print 'Signal populated, now normalazing'
     for i in range(numCurves):
-        signal[i] = signal[i] * 1000000 / count
+        signal[i] = signal[i] * 1000000. / count
  #       tempSum = probSignal[i].sum()
 #        if tempSum > 0:
 #            probSignal[i] = probSignal[i] / tempSum
