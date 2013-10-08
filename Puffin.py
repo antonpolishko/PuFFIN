@@ -19,6 +19,7 @@ def ReadBED(fileName):
             sizes = []
             point = []
             for line in inputFile:
+                # try:
                 read = line.split()
                 direction = 1 
                 posLeft = int(read[1])
@@ -34,6 +35,10 @@ def ReadBED(fileName):
                     if (~flag):
                         point.append([posLeft, readSize, direction])
                         sizes.append(readSize)
+                # except:
+                #     print "Failed to read ", fileName
+                #     pass
+            #appending a set of points of a processed chromosome to the list of all points
         print "Number of points ", len(point)
         return np.array(point), sizes
     except:
