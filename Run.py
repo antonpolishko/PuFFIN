@@ -44,20 +44,13 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
 
 def Run(fileName, Y):
     B = ReadBED(fileName)
-    points = B[0].copy()
-    shift = np.min(B[0][:,0])
-    points[:,0]-=shift
-    A = BuildSignals(points, Y)
+    A = BuildSignals(B[0], Y)
     print 'signals done'
     listNucs = []
     A.shape
     for i in range(0, len(Y) - 1):
         listNucs.append(nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
-        print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
-    for nucs in listNucs:
-        for nuc in nucs:
-            nuc[0]+=shift 
     return listNucs, B[0]
 
 
