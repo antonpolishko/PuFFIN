@@ -62,8 +62,8 @@ def Run(fileName, Y):
 
 
 def main():
-    fileName = sys.argv[1]
-    Y = loadVar('Qdump.var')
+    fileName = 'C:/Users/Anton/Dropbox/Public/test.bed' #sys.argv[1]
+    Y = loadVar('C:/Users/Anton/Dropbox/Public/Qdump.var')
     print 'Curves loaded...'
     A, inputPoints = Run(fileName, Y)
     print 'Done reading...'
