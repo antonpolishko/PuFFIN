@@ -531,7 +531,7 @@ def CurvesToWig(fileName, data, chrInd):
 #     return res
 
 
-def nucdet(curve, delta):
+def nucdet(curve, delta, curveOrig):
     """
     Takes function and places nucleosomes at peak with size calculated
     as distance to the closest deep
@@ -584,7 +584,7 @@ def nucdet(curve, delta):
                     size = min(sizeL, sizeR)
                     left = mnpos
                     lookforbound = False
-                    if size > 10:
+                    if curveOrig[center] > delta :
                         nucs.append((center, size))
 
     return array(nucs)
