@@ -45,14 +45,14 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
 def Run(fileName, Y):
     B = ReadBED(fileName)
     points = B[0].copy()
-    shift = np.min(B[0][:,0])
+    shift = 0 #np.min(B[0][:,0])
     points[:,0]-=shift
     A = BuildSignals(points, Y)
     print 'signals done'
     listNucs = []
     A.shape
     for i in range(0, len(Y) - 1):
-        listNucs.append(nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
+        listNucs.append(nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001, A[i]))
         print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
@@ -62,10 +62,11 @@ def Run(fileName, Y):
 
 
 def main():
-    fileName = 'C:/Users/Anton/Dropbox/Public/test.bed' #sys.argv[1]
-    Y = loadVar('C:/Users/Anton/Dropbox/Public/Qdump.var')
+    # fileName = '/Users/Anton/Dropbox/Public/test.bed' #sys.argv[1]
+    fileName = sys.argv[1]
+    Y = loadVar('Qexpand.var')
     print 'Curves loaded...'
-    A, inputPoints = Run(fileName, Y)
+    A, inputPoints = Run(fileName, Y[0:7])
     print 'Done reading...'
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
@@ -75,7 +76,8 @@ def main():
     del A
     del nucs
     D = np.array(D)
-    with open(fileName + '.nucs', 'w') as fout:
+    #with open(fileName + '.nucs', 'w') as fout:
+    with open('test.nucs', 'w') as fout:
         for line in D:
             for elem in line:
                 print>>fout, elem,
