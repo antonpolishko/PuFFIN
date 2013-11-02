@@ -416,23 +416,26 @@ def BuildSignal(points, chrLength):
 
 
 def Precompute(alpha):
-        # Create matrix that stores precomputed templates
-        B = np.zeros((1000, 1000))
-        alpha = float(alpha)
+    # Create matrix that stores precomputed templates
+    B = np.zeros((1000, 1000))
+    alpha = float(alpha)
 
-        def _Gauss(x, mu, sigma):
-        # Gauss function at point x with parameters (mu,sigma^2)
-            x = float(x)
-            mu = float(mu)
-            return math.exp(-(x - mu) ** 2 / sigma ** 2)
+    def _Gauss(x, mu, sigma):
+    # Gauss function at point x with parameters (mu,sigma^2)
+        x = float(x)
+        mu = float(mu)
+        return math.exp(-(x - mu) ** 2 / sigma ** 2)
 
-        for i in range(10, 1000):
-            vec = np.zeros(1000)
-            for j in range(1000):
-                # vec[j] = vec[j] + _Gauss(float(j), 500, alpha * i)
-                vec[j] = vec[j] + _Gauss(float(j), 500, alpha * i)
-            B[i, :] = vec / vec.sum()
-        return B
+    for i in range(10, 1000):
+        vec = np.zeros(1000)
+        sigma = alpha * i
+        mu = 500
+        coef = 1./(sigma * math.sqrt(math.pi) * math.erf( mu / sigma) - 2 * mu * _Gauss(0, mu, sigma) )
+        shift = _Gauss(0, mu, sigma)
+        for j in range(1000):
+            vec[j] = vec[j] + coef * ( _Gauss(float(j), mu, sigma ) - shift )
+        B[i, :] = vec 
+    return B
 
 
 def BuildSignals(dataChr, curves=None):
