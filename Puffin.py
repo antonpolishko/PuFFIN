@@ -417,7 +417,7 @@ def BuildSignal(points, chrLength):
 
 def Precompute(alpha):
     # Create matrix that stores precomputed templates
-    B = np.zeros((1000, 4000))
+    B = np.zeros((1000, 1000))
     alpha = float(alpha)
 
     def _Gauss(x, mu, sigma):
@@ -427,12 +427,12 @@ def Precompute(alpha):
         return math.exp(-(x - mu) ** 2 / sigma ** 2)
 
     for i in range(10, 1000):
-        vec = np.zeros(4000)
+        vec = np.zeros(1000)
         sigma = alpha * i
-        mu = 2000
+        mu = 500
         coef = 1./(sigma * math.sqrt(math.pi) * math.erf( mu / sigma) - 2 * mu * _Gauss(0, mu, sigma) )
         shift = _Gauss(0, mu, sigma)
-        for j in range(4000):
+        for j in range(1000):
             vec[j] = vec[j] + coef * ( _Gauss(float(j), mu, sigma ) - shift )
         B[i, :] = vec 
     return B
@@ -443,7 +443,7 @@ def BuildSignals(dataChr, curves=None):
     takes points for given chromosome (leftPos, size, direction, [probability])
     and creates raw signal, signal with curves Y, signal with curved normalized by probability
     '''
-    chrSize = int(max(dataChr[:, 0])) + 4000  # estimate chromosome size
+    chrSize = int(max(dataChr[:, 0])) + 2000  # estimate chromosome size
   #  rawSignal = np.zeros(chrSize)
     if not curves is None:
         numCurves = len(curves)
@@ -465,7 +465,7 @@ def BuildSignals(dataChr, curves=None):
         count += 1
         if delta < 1000:
             for i in range(numCurves):
-                signal[i][lxS:lyS + 1] += curves[i][x[1]][lxY:4000 - lyY]
+                signal[i][lxS:lyS + 1] += curves[i][x[1]][lxY:1000 - lyY]
  #               if len(x) > 3:
   #                  probSignal[i][lxS:lyS + 1] += 1.0 * curves[i][x[2]][lxY:1000 - lyY] * x[3]
     #Normalization of the curves by number of processed reads
