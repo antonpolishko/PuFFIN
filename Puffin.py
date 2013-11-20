@@ -723,10 +723,11 @@ def NucSizeCurves(listOfNucs, rawSignal=None):
                 next = len(curve)
 
             value = min(next - proc, proc - lx)
-            if value < curve[proc - 1]:
-                curve[lx:next + 1] = value
-            else:
-                curve[proc:next + 1] = value
+            # if value < curve[proc - 1]:
+            #     curve[lx:next + 1] = value
+            # else:
+            #     curve[proc:next + 1] = value
+            curve[np.floor((proc+lx)/2):np.floor((proc+next)/2) + 1] = value
             lx = proc  # move the position of the processed nucSize landscape
 
         i += 1
