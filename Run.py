@@ -54,7 +54,7 @@ def Run(fileName, Y):
     A.shape
     for i in range(0, len(Y) - 1):
         listNucs.append(
-            nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
+            nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001, A[i]))
         print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
