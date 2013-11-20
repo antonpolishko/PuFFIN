@@ -65,7 +65,7 @@ def Run(fileName, Y):
 
 def main():
     fileName = sys.argv[1]
-    Y = loadVar('Q_100.var')
+    Y = loadVar('Qnew.var')
     A, inputPoints = Run(fileName, Y)
     print 'Done reading...'
 #    saveVar([A, B], fileName + '.var')
