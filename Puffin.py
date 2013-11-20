@@ -13,21 +13,22 @@ def ReadBED(fileName):
     The coordinates are the same 0/1-based as the input in <fileName>
     """
     try:
-        #read the input bam file that contains the whole experiment
+        # read the input bam file that contains the whole experiment
         with open(fileName, 'rU') as inputFile:
             print "Starting process  file", fileName
             sizes = []
             point = []
             for line in inputFile:
                 read = line.split()
-                direction = 1 
+                direction = 1
                 posLeft = int(read[1])
                 readSize = abs(int(read[2]) - int(read[1]))
                 flag = False
-                if (len(read)>3):
+                if (len(read) > 3):
                     readScore = int(read[3])
                     flag = True
-                if (flag) and (readScore > 10): #filter out reads with bad mapping score
+                # filter out reads with bad mapping score
+                if (flag) and (readScore > 10):
                     point.append([posLeft, readSize, direction])
                     sizes.append(readSize)
                 else:
@@ -42,7 +43,7 @@ def ReadBED(fileName):
 
 def ReadBAM(fileName):
     try:
-        #read the input bam file that contains the whole experiment
+        # read the input bam file that contains the whole experiment
         print "Starting process bam file", fileName
         inputBam = Samfile(fileName, 'rb')
         print "file opened..."
@@ -53,21 +54,24 @@ def ReadBAM(fileName):
         chrInd = []
         count = 0
         for reference in inputBam.header['SQ']:
-            #populate the dictionary of chr_index:"chr reference" with new sequence
+            # populate the dictionary of chr_index:"chr reference" with new
+            # sequence
             chrDict[reference['SN']] = count
             chrInd.append(reference['SN'])
             count += 1
             point = []
             print reference['SN'], inputBam.count(reference['SN'])
-            #add alignments of particular sequence to the list of alignments
+            # add alignments of particular sequence to the list of alignments
             alignmentChr = inputBam.fetch(reference['SN'])
-            #populate points with 0-based position of the left-most read
+            # populate points with 0-based position of the left-most read
             for read in alignmentChr:
                 try:
                     posLeft = 0
                     readSize = 0
                     direction = 0
-                    if read.is_proper_pair and read.is_read1:  # check whether the alignment is properly paired and processed only once
+                    # check whether the alignment is properly paired and
+                    # processed only once
+                    if read.is_proper_pair and read.is_read1:
                         if read.is_reverse:
                             posLeft = read.mpos
                             readSize = abs(read.isize)
@@ -76,12 +80,15 @@ def ReadBAM(fileName):
                             posLeft = read.pos
                             readSize = read.isize
                             direction = 1
-                        if readSize > 0 and readSize < 1500 and read.tags[0] == ('XT', 'U'):  # filter out the alignments with not proper size #filterSize
+                        # filter out the alignments with not proper size
+                        # filterSize
+                        if readSize > 0 and readSize < 1500 and read.tags[0] == ('XT', 'U'):
                             point.append([posLeft, readSize, direction])
                             sizes.append(readSize)
                 except:
                     pass
-            #appending a set of points of a processed chromosome to the list of all points
+            # appending a set of points of a processed chromosome to the list
+            # of all points
             print "Appeinding chr points to the list...", len(point)
             points.append(np.array(point))
             alignments.append(alignmentChr)
@@ -116,7 +123,7 @@ def ReadInput(fileName):
     The coordinates are the same 0/1-based as the input in <fileName>
     """
     try:
-        #read the input bam file that contains the whole experiment
+        # read the input bam file that contains the whole experiment
         with open(fileName, 'r') as inputFile:
             print "Starting process  file", fileName
             sizes = []
@@ -135,13 +142,16 @@ def ReadInput(fileName):
                         posLeft = int(read[1])
                         readSize = abs(int(read[2]))
                         direction = -1
-                    if readSize > 0 and readSize < 1500:  # filter out the alignments with not proper size #filterSize
+                    # filter out the alignments with not proper size
+                    # filterSize
+                    if readSize > 0 and readSize < 1500:
                         point.append([posLeft, readSize, direction])
                         sizes.append(readSize)
                 except:
                     print "Failed to read ", fileName
                     pass
-            #appending a set of points of a processed chromosome to the list of all points
+            # appending a set of points of a processed chromosome to the list
+            # of all points
         print "Number of points ", len(point)
         return np.array(point), sizes
     except:
@@ -238,7 +248,7 @@ def Clustering(data, epsilon):
         X.append([i, 0.15])
     X = np.array(X)
     # samplePoints = \
-    #maine[:,random_integers(0,maine.shape[1],size=numberOfPoints)].transpose()
+    # maine[:,random_integers(0,maine.shape[1],size=numberOfPoints)].transpose()
     # X = samplePoints
     import np as np
     from scipy.spatial import distance
@@ -248,7 +258,7 @@ def Clustering(data, epsilon):
     D = distance.squareform(distance.pdist(X))
     S = 1 - (D / np.max(D))
 
-    ##########################################################################
+    #
     # Compute
     db = DBSCAN(eps=epsilon, min_samples=3).fit(S)
     core_samples = db.core_sample_indices_
@@ -415,24 +425,29 @@ def BuildSignal(points, chrLength):
     return signal / len(points) * 1000
 
 
-def Precompute(alpha):
-        # Create matrix that stores precomputed templates
-        B = np.zeros((1000, 1000))
-        alpha = float(alpha)
+def Precompute(alpha, sizeLen):
+    # Create matrix that stores precomputed templates
+    B = np.zeros((1000, sizeLen))
+    alpha = float(alpha)
 
-        def _Gauss(x, mu, sigma):
-        # Gauss function at point x with parameters (mu,sigma^2)
-            x = float(x)
-            mu = float(mu)
-            return math.exp(-(x - mu) ** 2 / sigma ** 2)
+    def _Gauss(x, mu, sigma):
+    # Gauss function at point x with parameters (mu,sigma^2)
+        x = float(x)
+        mu = float(mu)
+        return math.exp(-(x - mu) ** 2 / sigma ** 2)
 
-        for i in range(10, 1000):
-            vec = np.zeros(1000)
-            for j in range(1000):
-                # vec[j] = vec[j] + _Gauss(float(j), 500, alpha * i)
-                vec[j] = vec[j] + _Gauss(float(j), 500, alpha * i)
-            B[i, :] = vec / vec.sum()
-        return B
+    for i in range(10, 1000):
+        vec = np.zeros(sizeLen)
+        sigma = alpha * i
+        mu = sizeLen / 2
+        coef = 1. / \
+            (sigma * math.sqrt(math.pi) * math.erf(mu / sigma)
+             - 2 * mu * _Gauss(0, mu, sigma))
+        shift = _Gauss(0, mu, sigma)
+        for j in range(sizeLen):
+            vec[j] = vec[j] + coef * (_Gauss(float(j), mu, sigma) - shift)
+        B[i, :] = vec
+    return B
 
 
 def BuildSignals(dataChr, curves=None):
@@ -465,7 +480,7 @@ def BuildSignals(dataChr, curves=None):
                 signal[i][lxS:lyS + 1] += curves[i][x[1]][lxY:1000 - lyY]
  #               if len(x) > 3:
   #                  probSignal[i][lxS:lyS + 1] += 1.0 * curves[i][x[2]][lxY:1000 - lyY] * x[3]
-    #Normalization of the curves by number of processed reads
+    # Normalization of the curves by number of processed reads
 #    rawSignal = rawSignal * 1000000 / count
     print 'Signal populated, now normalazing'
     for i in range(numCurves):
@@ -484,15 +499,16 @@ def CurvesToWig(fileName, data, chrInd):
     with open(fileName, 'w') as fout:
         i = 0
         for chrom in data:
-            print>>fout, 'fixedStep  chrom=' + chrInd[i][10:] + ' start=1  step=1\n'
+            print>>fout, 'fixedStep  chrom=' + \
+                chrInd[i][10:] + ' start=1  step=1\n'
             i += 1
             for item in chrom:
                 print>>fout, float(item)
 
 
  # def BuildMaineSignal(points, chrLength, curves):
- #    # Build Coverage function for pair-end MAINE coverage
- #    # by adding Gaussian with area under the curve of size 1
+ # Build Coverage function for pair-end MAINE coverage
+ # by adding Gaussian with area under the curve of size 1
  #    signal = np.zeros(chrLength)
  #    for i in range(len(points)):
  #        mu = math.floor(points[i, 0] + 0.5 * points[i, 2])
@@ -531,7 +547,7 @@ def CurvesToWig(fileName, data, chrInd):
 #     return res
 
 
-def nucdet(curve, delta):
+def nucdet(curve, delta, curveOrig):
     """
     Takes function and places nucleosomes at peak with size calculated
     as distance to the closest deep
@@ -584,7 +600,7 @@ def nucdet(curve, delta):
                     size = min(sizeL, sizeR)
                     left = mnpos
                     lookforbound = False
-                    if size > 10:
+                    if (curveOrig[center] > delta) and (curve[center] > -0.5):
                         nucs.append((center, size))
 
     return array(nucs)
@@ -693,7 +709,8 @@ def NucSizeCurves(listOfNucs, rawSignal=None):
                 chrSize = nucs[-1:, 0] + nucs[-1:, 1]
     else:
         chrSize = len(rawSignal)
-    curves = np.ones([numSets, chrSize], dtype=int) * 200  # baseline for all diff curves
+    # baseline for all diff curves
+    curves = np.ones([numSets, chrSize], dtype=int) * 200
     i = 0
     for nucs in listOfNucs:
         curve = curves[i]
@@ -716,55 +733,62 @@ def NucSizeCurves(listOfNucs, rawSignal=None):
     return curves
 
 
-def NucPlace(listOfNucs, listOfSizes=None):
+def NucPlace(listOfNucsIn, listOfSizes=None):
     """
     Picking set of non overlapping nucleosomes. Each set of nuclesomes in the <listOfNucs> should contain
     sorted list of (center position, size, etc)
 
     The list itself should contain sorted list of sets with "thinner"-to-"fatter" nucleosomes
     """
+    listOfNucs = list(listOfNucsIn)
     if (listOfSizes == None):
         listOfSizes = NucSizeCurves(listOfNucs)
     chrSize = len(listOfSizes[0])
     Nucleos = []
     curLevel = 0  # current level of which curve produces properly spaced peaks
-    curPosition = 0  # current position on the genome, to the left everything is already processed
+    # current position on the genome, to the left everything is already
+    # processed
+    curPosition = 0
     flagRun = True  # flag to run the main cycle
     while flagRun:
-        #remove nuclesomes to the left of the processed boundary
+        # remove nuclesomes to the left of the processed boundary
         for i in range(len(listOfNucs)):
             nucs = listOfNucs[i]
             while (len(listOfNucs[i]) > 0 and listOfNucs[i][0][0] <= curPosition):
                 listOfNucs[i] = np.delete(listOfNucs[i], (0), axis=0)
-        #pick level that satisfies
+        # pick level that satisfies
         level = 0
         for nucs in listOfNucs:
-            #check whether potential nucleosome is within 146bp of it's neighbors
+            # check whether potential nucleosome is within 146bp of it's
+            # neighbors
             if (len(nucs) > 0 and min(listOfSizes[level][nucs[0][0] - 2:nucs[0][0] + 2] > 146)):
                 break
             else:
                 level += 1
-        #level picked, so we already now the nucleosome
+        # level picked, so we already now the nucleosome
         if (len(nucs) == 0):
             flagRun = False
             break
         mu = nucs[0][0]
         size = nucs[0][1]
         if len(Nucleos) > 0:
-            #check whether previous nucleosome is overlapping with the candidate one
+            # check whether previous nucleosome is overlapping with the
+            # candidate one
             if mu - Nucleos[-1][0] < 140:
                 if curLevel < level:
-                    #delete prev nucleosome since is "covered" by the candidate, add candidate to the list
+                    # delete prev nucleosome since is "covered" by the
+                    # candidate, add candidate to the list
                     Nucleos.pop()
                     Nucleos.append([mu, size, level])
                 else:
-                    #nothing to do here,  prev nucleosome already covering the candidate
+                    # nothing to do here,  prev nucleosome already covering the
+                    # candidate
                     pass
             else:
                 Nucleos.append([mu, size, level])
 
         else:
-            #no nucleosomes -> just add candidate to the list
+            # no nucleosomes -> just add candidate to the list
             Nucleos.append([mu, size, level])
         # update current position
         curPosition = mu + 140  # we add some offset
@@ -785,7 +809,8 @@ def CurveNucsPurify(nucs, curve):
     """
     res = np.zeros(len(curve))
     for nuc in nucs:
-        res[int(nuc[0] - nuc[1] * 0.8):int(nuc[0] + nuc[1] * 0.8) + 1] = curve[int(nuc[0] - nuc[1] * 0.8):int(nuc[0] + nuc[1] * 0.8) + 1]
+        res[int(nuc[0] - nuc[1] * 0.8):int(nuc[0] + nuc[1] * 0.8) + 1] = curve[
+            int(nuc[0] - nuc[1] * 0.8):int(nuc[0] + nuc[1] * 0.8) + 1]
     return res
 
 
@@ -797,7 +822,7 @@ def NucsPurify(nucs, inputPoints, numPointsTreshold=2):
     print len(points)
     res = []
     for nuc in nucs:
-        #filter all points that are withing nucleosome boundaries
+        # filter all points that are withing nucleosome boundaries
         tempInd = points[points >= nuc[0] - nuc[1]]
         setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
         if len(setOfPoints) > numPointsTreshold:
@@ -821,7 +846,7 @@ def NucsGlobalScore(nucs, inputPoints, numPointsTreshold=2):
     res = []
     count = 0
     for nuc in nucs:
-        #filter all points that are withing nucleosome boundaries
+        # filter all points that are withing nucleosome boundaries
         tempInd = points[points >= nuc[0] - nuc[1]]
         setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
         if len(setOfPoints) > numPointsTreshold:
