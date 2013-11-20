@@ -1,5 +1,5 @@
-from Puffin import * 
-import numpy as np 
+from Puffin import *
+import numpy as np
 import sys
 
 
@@ -13,9 +13,10 @@ def CreateCurves(number):
 def PrintToBed(nucs, fileName):
     try:
         with open(fileName, 'w') as fout:
-            pass #print to file
+            pass  # print to file
     except Exception, e:
         print "Smth went wront during outputing to", fileName
+
 
 def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
     """
@@ -27,7 +28,7 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
     res = []
     count = 0
     for nuc in nucs:
-        #filter all points that are withing nucleosome boundaries
+        # filter all points that are withing nucleosome boundaries
         tempInd = points[points >= nuc[0] - nuc[1]]
         setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
         if len(setOfPoints) > numPointsTreshold:
@@ -45,31 +46,31 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
 def Run(fileName, Y):
     B = ReadBED(fileName)
     points = B[0].copy()
-    shift = np.min(B[0][:,0])
-    points[:,0]-=shift
+    shift = np.min(B[0][:, 0])
+    points[:, 0] -= shift
     A = BuildSignals(points, Y)
     print 'signals done'
     listNucs = []
     A.shape
     for i in range(0, len(Y) - 1):
-        listNucs.append(nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
+        listNucs.append(
+            nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
         print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
         for nuc in nucs:
-            nuc[0]+=shift 
+            nuc[0] += shift
     return listNucs, B[0]
 
 
 def main():
     fileName = sys.argv[1]
-    Y = loadVar('Qdump.var')
-    print 'Curves loaded...'
+    Y = loadVar('Q_100.var')
     A, inputPoints = Run(fileName, Y)
     print 'Done reading...'
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
-    nucs = NucPlace(A);
+    nucs = NucPlace(A)
     print 'Placement done'
     D = NucsScores(nucs, inputPoints, 2, 1)
     del A
@@ -87,4 +88,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
