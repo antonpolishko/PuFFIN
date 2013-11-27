@@ -13,6 +13,7 @@ def NucPos(listNucsIn):
     lastAddedNuc = 0
     while flag:
         flag = False
+        justAdded = 0
         for curLevel in range(numLevels):
             nucs0 = listNucs[curLevel]
             if len(nucs0) > 0:
@@ -48,13 +49,14 @@ def NucPos(listNucsIn):
                         ind = abs(nucs[:, 0] - nucToProcess) < 147
                         listNucs[i] = nucs[~ind, :]
                 nucChild.append(nucOver[1:])
-    return nucRes[1:,:], nucChild
+    return nucRes[1:, :], nucChild
 
-fileName = "DATA/input_wp.bed"
-Y = loadVar('Qnew.var')
+fileName = "DATA/test.bed"
+Q = loadVar('Qnew.var')
+
 B = ReadBED(fileName)
 points = B[0].copy()
-shift = np.min(B[0][:, 0]) - 1000
+shift = 0 # np.min(B[0][:, 0]) - 1000
 points[:, 0] -= shift
 print 'Done reading...'
 A = BuildSignals(points, Y)
@@ -63,7 +65,7 @@ listNucs = []
 listNucs2 = []
 for i in range(0, len(Y) - 1):
     listNucs.append(
-        nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001, A[i]))
+        nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.001, A[0]))
     listNucs2.append(
         nucdet(A[i], 0.0001, A[i]))
     print 'curve ', i, ' is done...'
@@ -82,4 +84,5 @@ for i in range(99):
     vlines(listNucs[i][:, 0] + listNucs[i][:, 3], -i - 1, -i, 'green')
 
 for i in range(99):
-    plot(A[i])
+    # plot(A[i])
+    plot((A[i] + 1.) / (A[-1] + 1.) - 1)
