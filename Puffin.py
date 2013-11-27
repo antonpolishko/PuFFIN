@@ -601,7 +601,7 @@ def nucdet(curve, delta, curveOrig):
                     left = mnpos
                     lookforbound = False
                     if (curveOrig[center] > delta) and (curve[center] > -0.5):
-                        nucs.append((center, size))
+                        nucs.append((center, size, sizeL, sizeR))
 
     return array(nucs)
 
