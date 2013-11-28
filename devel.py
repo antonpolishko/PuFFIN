@@ -38,9 +38,11 @@ def NucPos(listNucsIn):
             for l in range(justAdded):
                 lastAddedNuc += 1
                 nucToProcess = nucRes[lastAddedNuc][0]
-                nucOver = [0, 0, 0, 0]
+                nucOver = [0, 0, 0, 0, 0]
                 for i in range(curLevel):
                     nucs = listNucs[i]
+                    newCol = np.ones((len(nucs0), 1), dtype='int') * curLevel
+                    nucs = np.hstack((nucs, newCol))
                     if len(nucs) > 0:
                         ind = abs(nucs[:, 0] - nucToProcess) < 147
                         nucOver = np.vstack((nucOver, nucs[ind, :]))
