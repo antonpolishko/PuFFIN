@@ -4,7 +4,7 @@ import sys
 
 
 def NucPos(listNucsIn):
-    nucRes = np.array([0, 0, 0, 0])
+    nucRes = np.array([0, 0, 0, 0, 0])
     nucChild = []
     numLevels = len(listNucsIn)
     listNucs = list(listNucsIn)
@@ -16,10 +16,12 @@ def NucPos(listNucsIn):
         justAdded = 0
         for curLevel in range(numLevels):
             nucs0 = listNucs[curLevel]
+            newCol = np.ones((len(nucs0), 1), dtype='int')
+            nucs0 = np.hstack((nucs0, newCol))
             if len(nucs0) > 0:
                 # add first and last nucleosomes
                 nucs = np.vstack(
-                    (np.array([0, 0, 0, 0]), nucs0, [nucs0[-1, 0] + 200, 0, 0, 0]))
+                    (np.array([0, 0, 0, 0, 0]), nucs0, [nucs0[-1, 0] + 200, 0, 0, 0, 0]))
                 dist = np.roll(nucs[:, 0], -1, 0) - nucs[:, 0]
                 ind = (dist > 147) * (np.roll(dist, 1, 0) > 147)
                 ind1 = np.delete(ind, 0)
@@ -52,11 +54,11 @@ def NucPos(listNucsIn):
     return nucRes[1:, :], nucChild
 
 fileName = "DATA/test.bed"
-Q = loadVar('Qnew.var')
+Y = loadVar('Qnew.var')
 
 B = ReadBED(fileName)
 points = B[0].copy()
-shift = 0 # np.min(B[0][:, 0]) - 1000
+shift = 0  # np.min(B[0][:, 0]) - 1000
 points[:, 0] -= shift
 print 'Done reading...'
 A = BuildSignals(points, Y)
