@@ -16,7 +16,7 @@ def NucPos(listNucsIn):
         justAdded = 0
         for curLevel in range(numLevels):
             nucs0 = listNucs[curLevel]
-            newCol = np.ones((len(nucs0), 1), dtype='int')
+            newCol = np.ones((len(nucs0), 1), dtype='int') * curLevel
             nucs0 = np.hstack((nucs0, newCol))
             if len(nucs0) > 0:
                 # add first and last nucleosomes
