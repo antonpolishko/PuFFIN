@@ -54,7 +54,7 @@ def Run(fileName, Y):
     A.shape
     for i in range(0, len(Y) - 1):
         listNucs.append(
-            nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001, A[i]))
+            nucdet(np.log((A[i] + 1.0) / (A[len(Y) - 1] + 1.0)) , 0.0001, A[i]))
         print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
@@ -65,7 +65,7 @@ def Run(fileName, Y):
 
 def main():
     fileName = sys.argv[1]
-    Y = loadVar('Qnew.var')
+    Y = loadVar('Q40.var')
     A, inputPoints = Run(fileName, Y)
     print 'Done reading...'
 #    saveVar([A, B], fileName + '.var')
