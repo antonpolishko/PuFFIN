@@ -17,20 +17,29 @@ def main():
     mu = []  # list to store peak centers
     w = []  # list to store peak weights
     sig = []  # list to store peak variation
-    mu.append(300)  # location of the main peak
-    w.append(10)  # weight of the main peak
-    sig.append(20)
-    mu.append(225)  # location of the first secondary peak
-    w.append(1)
-    sig.append(30)
-    mu.append(375)  # location of the second secondary peak
-    w.append(2)
-    sig.append(30)
-    choosePeaks = weighted_values(w, 20)
+    mu.append(300.)  # location of the main peak
+    w.append(80.)  # weight of the main peak
+    sig.append(40.)
+    mu.append(250.)  # location of the first secondary peak
+    w.append(10.)
+    sig.append(20.)
+    mu.append(350.0)  # location of the second secondary peak
+    w.append(10.)
+    sig.append(20.)
+    choosePeaks = weighted_values(w, 10)
     listOfMidpoints = []  # location of fragment midpoints
-    for peak in choosePeaks:
-        x = np.random.normal(mu[peak], sig[peak])
+    print w, mu, sig
+    # for peak in choosePeaks:
+    #     x = np.random.normal(mu[peak], sig[peak])
+    #     listOfMidpoints.append(x)
+    for i in xrange(20):
+        x = np.random.normal(mu[0], sig[0])
         listOfMidpoints.append(x)
+    # for i in xrange(10):
+    #     x = np.random.normal(mu[1], sig[1])
+    #     listOfMidpoints.append(x)
+    #     x = np.random.normal(mu[2], sig[2])
+    #     listOfMidpoints.append(x)
     try:
         f = open(fileNameOut, 'w')
         for loc in listOfMidpoints:

@@ -661,11 +661,11 @@ def BuildRawSignal(points):
     Takes points (center, size, direction, ...) and creates coverage function
     that represents simple read pile-up (pair ends treated separately)
     """
-    chrLength = max(points[:, 0])
+    chrLength = max(points[:, 0])+1000
     signal = np.zeros(chrLength)
     for i in range(len(points)):
-        lx = min(points[i, 0], points[i, 0] + points[i, 2])
-        ly = max(points[i, 0], points[i, 0] + points[i, 2])
+        lx = min(points[i, 0] - 73, points[i, 0] + 73)
+        ly = max(points[i, 0] - 73, points[i, 0] + 73)
         if (ly - lx < 40):
             signal[lx:ly + 1] = signal[lx:ly + 1] + 1
         else:
@@ -727,7 +727,8 @@ def NucSizeCurves(listOfNucs, rawSignal=None):
             #     curve[lx:next + 1] = value
             # else:
             #     curve[proc:next + 1] = value
-            curve[np.floor((proc+lx)/2):np.floor((proc+next)/2) + 1] = value
+            curve[np.floor((proc + lx) / 2):np.floor(
+                (proc + next) / 2) + 1] = value
             lx = proc  # move the position of the processed nucSize landscape
 
         i += 1

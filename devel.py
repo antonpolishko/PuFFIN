@@ -53,8 +53,8 @@ def NucPos(listNucsIn):
                 nucChild.append(nucOver[1:])
     return nucRes[1:, :], nucChild
 
-fileName = "DATA/test.bed"
-Y = loadVar('Qnew.var')
+fileName = "ExamplePaper.bed"
+Y = loadVar('Q.var')
 
 B = ReadBED(fileName)
 points = B[0].copy()
@@ -65,6 +65,9 @@ A = BuildSignals(points, Y)
 print 'signals done'
 listNucs = []
 listNucs2 = []
+reads = points.copy()
+reads[:,0] += 73
+signal = BuildRawSignal(reads)
 for i in range(0, len(Y) - 1):
     listNucs.append(
         nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.001, A[0]))
@@ -76,15 +79,16 @@ for i in range(0, len(Y) - 1):
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
 nucs = NucPlace(listNucs)
-nucs2 = NucPlace(listNucs2)
+#nucs2 = NucPlace(listNucs2)
 
 a, b = NucPos(listNucs)
 
-for i in range(99):
+for i in range(40):
     vlines(listNucs[i][:, 0], -i - 1, -i, 'black')
-    vlines(listNucs[i][:, 0] - listNucs[i][:, 2], -i - 1, -i, 'yellow')
-    vlines(listNucs[i][:, 0] + listNucs[i][:, 3], -i - 1, -i, 'green')
+    # vlines(listNucs[i][:, 0] - listNucs[i][:, 2], -i - 1, -i, 'yellow')
+    # vlines(listNucs[i][:, 0] + listNucs[i][:, 3], -i - 1, -i, 'green')
 
-for i in range(99):
+for i in range(40):
     # plot(A[i])
     plot((A[i] + 1.) / (A[-1] + 1.) - 1)
+plot(signal, 'black')
