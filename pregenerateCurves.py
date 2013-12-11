@@ -8,9 +8,10 @@ def main():
     else:
         fileName = sys.argv[1]
     Q = []
-    for i in range(100):
+    for i in range(40):
         print i
         Q.append(pf.Precompute(0.05 + (i + 0.) / 100. * 1.45, 1000))
+    Q.append(pf.Precompute(1.5, 1000))
     pf.saveVar(Q, fileName)
 
 
