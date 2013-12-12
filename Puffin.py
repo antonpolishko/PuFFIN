@@ -5,6 +5,57 @@ import pickle
 import sys
 
 
+def NucPos(listNucsIn):
+    nucRes = np.array([0, 0, 0, 0, 0])
+    nucChild = []
+    numLevels = len(listNucsIn)
+    listNucs = list(listNucsIn)
+    flag = True
+    justAdded = 0
+    lastAddedNuc = 0
+    while flag:
+        flag = False
+        justAdded = 0
+        for curLevel in range(numLevels):
+            nucs0 = listNucs[curLevel]
+            newCol = np.ones((len(nucs0), 1), dtype='int') * curLevel
+            nucs0 = np.hstack((nucs0, newCol))
+            if len(nucs0) > 0:
+                # add first and last nucleosomes
+                nucs = np.vstack(
+                    (np.array([0, 0, 0, 0, 0]), nucs0, [nucs0[-1, 0] + 200, 0, 0, 0, 0]))
+                dist = np.roll(nucs[:, 0], -1, 0) - nucs[:, 0]
+                ind = (dist > 147) * (np.roll(dist, 1, 0) > 147)
+                ind1 = np.delete(ind, 0)
+                ind = np.delete(ind1, len(ind1) - 1)
+                nucs = nucs[1:-1, :]
+                justAdded = ind.sum()
+                if justAdded > 0:
+                    flag = True
+                    nucRes = np.vstack((nucRes, nucs[ind, :]))
+                    break
+        if justAdded > 0:
+                # Remove nucleosomes that overlap with solution from the
+                # list
+            for l in range(justAdded):
+                lastAddedNuc += 1
+                nucToProcess = nucRes[lastAddedNuc][0]
+                nucOver = [0, 0, 0, 0]
+                for i in range(curLevel):
+                    nucs = listNucs[i]
+                    if len(nucs) > 0:
+                        ind = abs(nucs[:, 0] - nucToProcess) < 147
+                        nucOver = np.vstack((nucOver, nucs[ind, :]))
+                        listNucs[i] = nucs[~ind, :]
+                for i in range(curLevel, numLevels):
+                    nucs = listNucs[i]
+                    if len(nucs) > 0:
+                        ind = abs(nucs[:, 0] - nucToProcess) < 147
+                        listNucs[i] = nucs[~ind, :]
+                nucChild.append(nucOver[1:])
+    return nucRes[1:, :], nucChild
+
+
 def ReadBED(fileName):
     """
     Reading BED file <fileName> that contains pair-end data-points in the format

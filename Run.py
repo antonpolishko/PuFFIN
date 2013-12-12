@@ -71,6 +71,7 @@ def main():
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
     nucs = NucPlace(A)
+    nucsRes, child = NucPos(A)
     print 'Placement done'
     D = NucsScores(nucs, inputPoints, 2, 1)
     del A
