@@ -43,6 +43,36 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
     return np.array(res)
 
 
+def NucsScoresWithChild(nucs,child, inputPoints, numPointsTreshold=0, adjustScore=1):
+    """
+    Takes an array of (center, 1/2*size) peaks and children peaks and set of points 
+    and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
+    """
+    points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
+    print len(points)
+    res = []
+    count = -1
+    for nuc in nucs:
+        count += 1
+        # filter all points that are withing nucleosome boundaries
+        tempInd = points[points >= nuc[0] - nuc[1]]
+        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
+        if len(setOfPoints) > numPointsTreshold:
+            try:
+                score = len(setOfPoints) * adjustScore
+                setOfChild = child[count]
+                if len(np.array(setOfChild).shape) > 1:
+                    fuzScore = setOfChild[:,0].std()
+                else:
+                    fuzScore = 0
+                temp = np.concatenate((nuc, [score, fuzScore , np.std(setOfPoints)]))
+                res.append(temp)
+            except Exception:
+                print "bad", count, fuzScore
+                pass
+    return np.array(res)
+
+
 def Run(fileName, Y):
     B = ReadBED(fileName)
     points = B[0].copy()
@@ -54,7 +84,7 @@ def Run(fileName, Y):
     A.shape
     for i in range(0, len(Y) - 1):
         listNucs.append(
-            nucdet(np.log((A[i] + 1.0) / (A[len(Y) - 1] + 1.0)) , 0.0001, A[i]))
+            nucdet(np.log((A[i] + 1.0) / (A[len(Y) - 1] + 1.0)), 0.0001, A[i]))
         print 'curve ', i, ' is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
@@ -70,12 +100,11 @@ def main():
     print 'Done reading...'
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
-    nucs = NucPlace(A)
+    # nucs = NucPlace(A)
     nucsRes, child = NucPos(A)
     print 'Placement done'
-    D = NucsScores(nucs, inputPoints, 2, 1)
+    D = NucsScoresWithChild(nucsRes, child, inputPoints, 2, 1)
     del A
-    del nucs
     D = np.array(D)
     with open(fileName + '.nucs', 'w') as fout:
         for line in D:
