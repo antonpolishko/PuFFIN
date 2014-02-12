@@ -66,7 +66,7 @@ def ReadBED(fileName):
     try:
         # read the input bam file that contains the whole experiment
         with open(fileName, 'rU') as inputFile:
-            print "Starting process  file", fileName
+            print "Starting to process input file", fileName
             sizes = []
             point = []
             for line in inputFile:
@@ -87,6 +87,8 @@ def ReadBED(fileName):
                         point.append([posLeft, readSize, direction])
                         sizes.append(readSize)
         print "Number of points ", len(point)
+        #with open(fileName+'.txt','a') as outFile:
+            # print >> outFile, "Number of quality input points ", len(point),
         return np.array(point), sizes
     except:
         print "Can't read input file", fileName
