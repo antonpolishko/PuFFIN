@@ -18,9 +18,66 @@ def PrintToBed(nucs, fileName):
         print "Smth went wront during outputing to", fileName
 
 
-def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
+def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
     """
-    Takes an array of (center, 1/2*size) nucleosomes and set of points 
+    Takes an array of (center, 1/2*size) nucleosomes and set of points
+    and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
+    """
+    points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
+    print len(points)
+    res = []
+    count = 0
+    for nuc in nucs:
+        # filter all points that are withing nucleosome boundaries
+        tempInd = points[points >= nuc[0] - nuc[1]]
+        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
+        if len(setOfPoints) > numPointsTreshold:
+            try:
+                score = len(setOfPoints) * adjustScore
+                temp = np.concatenate((nuc, [score, np.var(setOfPoints)]))
+                count += score
+                res.append(temp)
+            except Exception:
+                print "bad"
+                pass
+    return np.array(res)
+
+def NucsAdjust(nucs, inputPoints):
+    """
+    Takes an array of (center, 1/2*size) nucleosomes and set of points
+    and recalculates the centers for nucleosomes as a centroid of corresponding points
+    """
+    points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
+    res = []
+    res2 = []
+    for nuc in nucs:
+        # filter all points that are withing nucleosome boundaries
+        tempInd = points[points >= nuc[0] - nuc[1]]
+        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
+        tempInd2 = points[points >= nuc[0] - 73]
+        setOfPoints2 = tempInd2[tempInd2 <= nuc[0] + 73]
+        if len(setOfPoints) > 0:
+            try:
+                temp = nuc.copy();
+                temp[0] = np.mean(setOfPoints)
+                res.append(temp)
+            except Exception:
+                print "bad"
+                pass
+        if len(setOfPoints2) > 0:
+            try:
+                temp = nuc.copy();
+                temp[0] = np.mean(setOfPoints2)
+                res2.append(temp)
+            except Exception:
+                print "bad"
+                pass
+    return np.array(res), np.array(res2)
+
+
+def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
+    """
+    Takes an array of (center, 1/2*size) nucleosomes and set of points
     and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
     """
     points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
@@ -43,13 +100,12 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
     return np.array(res)
 
 
-def NucsScoresWithChild(nucs,child, inputPoints, numPointsTreshold=0, adjustScore=1):
+def NucsScoresWithChild(nucs, child, inputPoints, numPointsTreshold=0, adjustScore=1):
     """
-    Takes an array of (center, 1/2*size) peaks and children peaks and set of points 
+    Takes an array of (center, 1/2*size) peaks and children peaks and set of points
     and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
     """
     points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
-    print len(points)
     res = []
     count = -1
     for nuc in nucs:
@@ -57,20 +113,30 @@ def NucsScoresWithChild(nucs,child, inputPoints, numPointsTreshold=0, adjustScor
         # filter all points that are withing nucleosome boundaries
         tempInd = points[points >= nuc[0] - nuc[1]]
         setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
+        tempInd2 = points[points >= nuc[0] - 73]
+        setOfPoints2 = tempInd2[tempInd2 <= nuc[0] + 73]
         if len(setOfPoints) > numPointsTreshold:
             try:
                 score = len(setOfPoints) * adjustScore
                 setOfChild = child[count]
                 if len(np.array(setOfChild).shape) > 1:
-                    fuzScore = setOfChild[:,0].std()
+                    fuzScore = setOfChild[:, 0].std()
+                    betterLoc = np.floor(setOfChild[:, 0].mean())
                 else:
                     fuzScore = 0
-                temp = np.concatenate((nuc, [score, fuzScore , np.std(setOfPoints)]))
+                    betterLoc = nuc[0]
+                if len(setOfPoints2) > 1:
+                    fuzScore2 = np.std(setOfPoints2)
+                    betterLoc2 = np.mean(setOfPoints2)
+                else:
+                    fuzScore2 = 0
+                    betterLoc2 = nuc[0]
+                temp = np.concatenate(
+                    (nuc, [score, fuzScore, np.std(setOfPoints), betterLoc, betterLoc2, fuzScore2]))
                 res.append(temp)
             except Exception:
                 print "bad", count, fuzScore
                 pass
-    return np.array(res)
 
 
 def Run(fileName, Y):
@@ -101,9 +167,15 @@ def main():
 #    saveVar([A, B], fileName + '.var')
 #    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
     # nucs = NucPlace(A)
-    nucsRes, child = NucPos(A)
+    # B = []
+    C = []
+    for line in A:
+        b, c = NucsAdjust(line, inputPoints)
+        # B.append(b)
+        C.append(c)
+    nucsRes, child = NucPos(C)
     print 'Placement done'
-    D = NucsScoresWithChild(nucsRes, child, inputPoints, 2, 1)
+    D = NucsScoresWithChild(nucsRes, child, inputPoints, -1, 1)
     del A
     D = np.array(D)
     with open(fileName + '.nucs', 'w') as fout:
