@@ -1,46 +1,7 @@
 from Puffin import *
 import numpy as np
 import sys
-
-
-def CreateCurves(number):
-    Q = []
-    for i in range(number):
-        Q.append(Precompute(0.01 + i / number * (0.2 - 0.01)))
-    return np.array(Q)
-
-
-def PrintToBed(nucs, fileName):
-    try:
-        with open(fileName, 'w') as fout:
-            pass  # print to file
-    except Exception, e:
-        print "Smth went wront during outputing to", fileName
-
-
-def NucsScores(nucs, inputPoints, numPointsTreshold=2, adjustScore=1):
-    """
-    Takes an array of (center, 1/2*size) nucleosomes and set of points 
-    and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
-    """
-    points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
-    print len(points)
-    res = []
-    count = 0
-    for nuc in nucs:
-        # filter all points that are withing nucleosome boundaries
-        tempInd = points[points >= nuc[0] - nuc[1]]
-        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
-        if len(setOfPoints) > numPointsTreshold:
-            try:
-                score = len(setOfPoints) * adjustScore
-                temp = np.concatenate((nuc, [score, np.var(setOfPoints)]))
-                count += score
-                res.append(temp)
-            except Exception:
-                print "bad"
-                pass
-    return np.array(res)
+import os.path
 
 
 def Run(fileName, Y):
@@ -54,8 +15,8 @@ def Run(fileName, Y):
     A.shape
     for i in range(0, len(Y) - 1):
         listNucs.append(
-            nucdet((A[i] + 1.0) / (A[len(Y) - 1] + 1.0) - 1, 0.0001))
-        print 'curve ', i, ' is done...'
+            nucdet(np.log((A[i] + 1.0) / (A[len(Y) - 1] + 1.0)), 0.0001, A[i]))
+        print 'curve', i, str(i/0.4)+'% is done...'
     #listSize = NucSizeCurves(listNucs, A[0])
     for nucs in listNucs:
         for nuc in nucs:
@@ -65,25 +26,41 @@ def Run(fileName, Y):
 
 def main():
     fileName = sys.argv[1]
-    Y = loadVar('Q_100.var')
-    A, inputPoints = Run(fileName, Y)
+    if (os.path.isfile('Q.var')):
+        Y = loadVar('Q.var')
+    else:
+        import pregenerateCurves
+        print "No curves file found, trying to create one (this step is suppose to take place only once)"
+        pregenerateCurves.Run()
+        if (os.path.isfile('Q.var')):
+            Y = loadVar('Q.var')
+        else:
+            print "Something went wrong with loading curve file. Try running >python pregenerateCurve.py"        
+    print "Looking for input file"
+    if (os.path.isfile(fileName)):
+        A, inputPoints = Run(fileName, Y)
+    else:
+        print "input file doens't exist. Quiting..."
+        return 1
     print 'Done reading...'
-#    saveVar([A, B], fileName + '.var')
-#    saveVar([C, inputPoints], 'OUT/curves/' + fileName + '.var')
-    nucs = NucPlace(A)
+    C = []
+    for line in A:
+        b, c = NucsAdjust(line, inputPoints)
+        C.append(c)
+    nucsRes, child = NucPos(C)
     print 'Placement done'
-    D = NucsScores(nucs, inputPoints, 2, 1)
+    D = NucsScores(nucsRes,inputPoints, -1, 1)
     del A
-    del nucs
     D = np.array(D)
-    with open(fileName + '.nucs', 'w') as fout:
-        for line in D:
-            for elem in line:
-                print>>fout, elem,
-            print>>fout, ""
+    D = D[:, [0,1,5,6, 4]]
+    # with open(fileName + '.nucs', 'w') as fout:
+    #     print>>fout, "Location\tPeak_width\tScore\tSTD(fuzziness)\tCurve_level"
+    #     for line in D:
+    #         for elem in line:
+    #             print>>fout, elem,
+    #         print>>fout, ""
+    np.savetxt(fileName+'.nucs',D, fmt='%.2f', delimiter='\t', newline='\n', header='Location\tPeak_width\tScore\tSTD(fuzziness)\tCurve_level')
     print 'Saving done'
-#    saveVar(nucs, 'OUT/nucs/' + fileName + '_nucs.var')
-#    print 'Saving done'
 
 
 if __name__ == '__main__':
