@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import pylab as pl
+# import pylab as pl
 import pickle
 import sys
 
@@ -150,6 +150,7 @@ def BuildSignals(dataChr, curves=None):
     '''
     takes points for given chromosome (leftPos, size, direction, [probability])
     and creates raw signal, signal with curves Y, signal with curved normalized by probability
+    TO DO: remove hardcoded dependency on the curve lenght of 1000bp
     '''
     chrSize = int(max(dataChr[:, 0])) + 2000  # estimate chromosome size
     if not curves is None:
@@ -237,7 +238,7 @@ def nucdet(curve, delta, curveOrig):
 
 
 
-def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
+def NucsScores(nucs, inputPoints, numPointsTreshold=0):
     """
     Takes an array of (center, 1/2*size) nucleosomes and set of points
     and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
@@ -248,16 +249,19 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
     count = 0
     for nuc in nucs:
         # filter all points that are withing nucleosome boundaries
-        tempInd = points[points >= nuc[0] - nuc[1]]
-        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
-        if len(setOfPoints) > numPointsTreshold:
+        value = nuc[0]
+        spread = nuc[1]
+        if (spread < 73):
+            spread = 73
+        setOfPoints = points[(points >= value - spread) * (points <= value + spread)]
+        score = len(setOfPoints)
+        if score > numPointsTreshold:
             try:
-                score = len(setOfPoints) * adjustScore
                 temp = np.concatenate((nuc, [score, np.std(setOfPoints)]))
                 count += score
                 res.append(temp)
             except Exception:
-                print "bad"
+                print "error for computing Nucleosome scores"
                 pass
     return np.array(res)
 
@@ -269,30 +273,19 @@ def NucsAdjust(nucs, inputPoints):
     """
     points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
     res = []
-    res2 = []
     for nuc in nucs:
         # filter all points that are withing nucleosome boundaries
-        tempInd = points[points >= nuc[0] - nuc[1]]
-        setOfPoints = tempInd[tempInd <= nuc[0] + nuc[1]]
-        tempInd2 = points[points >= nuc[0] - 73]
-        setOfPoints2 = tempInd2[tempInd2 <= nuc[0] + 73]
+        value = nuc[0]
+        setOfPoints = points[(points >= value - 73) * (points <= value + 73)]
         if len(setOfPoints) > 0:
             try:
                 temp = nuc.copy();
                 temp[0] = np.mean(setOfPoints)
                 res.append(temp)
             except Exception:
-                print "bad"
+                print "error while adjusting nucleosomes"
                 pass
-        if len(setOfPoints2) > 0:
-            try:
-                temp = nuc.copy();
-                temp[0] = np.mean(setOfPoints2)
-                res2.append(temp)
-            except Exception:
-                print "bad"
-                pass
-    return np.array(res), np.array(res2)
+    return np.array(res)
 
 
 def NucPlace(listOfNucsIn, listOfSizes=None):

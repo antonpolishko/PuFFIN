@@ -5,7 +5,8 @@ import sys
 def Run(fileName="Q.var"):
     Q = []
     print "Start pregenerating curves"
-    for i in range(40):
+    for i in [2,5, 10, 12, 18, 23 ,35]:
+    # for i in range(40):
         print str(i/0.4)+"%"
         Q.append(pf.Precompute(0.05 + (i + 0.) / 100. * 1.45, 1000))
     Q.append(pf.Precompute(1.5, 1000))
