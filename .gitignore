@@ -1,1 +1,3 @@
 DATA/puffin_test_3R_10K.bed
+*.var
+*.pyc
