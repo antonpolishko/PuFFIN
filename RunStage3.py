@@ -1,4 +1,4 @@
-from Puffin import *
+nucfrom Puffin import *
 import numpy as np
 import sys
 import os.path

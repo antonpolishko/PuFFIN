@@ -5,8 +5,7 @@ import os.path
 import time
 
 
-def Run(fileName, Y):
-    B = ReadBED(fileName)
+def Run(B, Y):
     points = B[0].copy()
     shift = np.min(B[0][:, 0])
     points[:, 0] -= shift
@@ -35,6 +34,14 @@ def main():
     else:
         print "please provide the input fileName"
         return 0
+    if (len(sys.argv) > 3):
+        minRange = sys.argv[2]
+        maxRange = sys.argv[3]
+        print "fragment sizes ("+str(minRange)+".."+str(maxRange)+") are used"
+    else:
+        minRange = 3
+        maxRange = 1000
+        print "default fragment sizes (3..1000) are used"
     if (os.path.isfile('Q.var')):
         Y = loadVar('Q.var')
     else:
@@ -47,7 +54,8 @@ def main():
             print "Something went wrong with loading curve file. Try running >python pregenerateCurve.py"
     print "Looking for input file"
     if (os.path.isfile(fileName)):
-        A, inputPoints = Run(fileName, Y)
+        B = ReadBED(fileName, minRange, maxRange)
+        A, inputPoints = Run(B, Y)
     else:
         print "input file doens't exist. Quiting..."
         return 1

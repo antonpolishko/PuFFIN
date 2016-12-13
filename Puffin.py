@@ -56,7 +56,7 @@ def NucPos(listNucsIn):
     return nucRes[1:, :], nucChild
 
 
-def ReadBED(fileName):
+def ReadBED(fileName, minRange=3, maxRange=1000):
     """
     Reading BED file <fileName> that contains pair-end data-points in the format
     (chromosome name, left-most location of the mate, right-most location of the mate, mapping score)
@@ -64,7 +64,7 @@ def ReadBED(fileName):
     The coordinates are the same 0/1-based as the input in <fileName>
     """
     try:
-        # read the input bam file that contains the whole experiment
+        # read the input bed file that contains the whole experiment
         with open(fileName, 'rU') as inputFile:
             print "Starting process  file", fileName
             sizes = []
@@ -75,7 +75,7 @@ def ReadBED(fileName):
                 posLeft = int(read[1])
                 readSize = abs(int(read[2]) - int(read[1]))
                 flag = False
-                if (len(read) > 3):
+                if (len(read) > minRange and len(read) < maxRange):
                     readScore = int(read[3])
                     flag = True
                 # filter out reads with bad mapping score
@@ -247,22 +247,27 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=0):
     print len(points)
     res = []
     count = 0
+    
+    
+    def assign(points, centroids):
+    # assignments = []
+    	assignments = [list([]) for _ in xrange(len(centroids))]
+    	for i in range(len(points)):
+        	pos = np.searchsorted(centroids, points[i])
+        	if pos >= len(centroids) or (pos != 0 and abs(points[i] - centroids[pos]) > abs(points[i] - centroids[pos-1])):
+			pos = pos-1
+        	assignments[pos].append(points[i])
+    	return assignments
+
+    i = -1
     for nuc in nucs:
-        # filter all points that are withing nucleosome boundaries
-        value = nuc[0]
-        spread = nuc[1]
-        if (spread < 73):
-            spread = 73
-        setOfPoints = points[(points >= value - spread) * (points <= value + spread)]
-        score = len(setOfPoints)
-        if score > numPointsTreshold:
-            try:
-                temp = np.concatenate((nuc, [score, np.std(setOfPoints)]))
-                count += score
-                res.append(temp)
-            except Exception:
-                print "error for computing Nucleosome scores"
-                pass
+        i += 1
+        points = assignments[i]
+        if len(points > numPointsTreshold):
+            nuc[0] = np.mean(points)
+            score = len(points)
+            stdScore = np.std(points)
+            res.append(np.concatenate((nuc, [score, stdScore]))) 
     return np.array(res)
 
 
