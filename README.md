@@ -4,7 +4,7 @@
 
 ## Description
 
-PuFFIN is a command line tool for accurate placing of the nucleosomes based on the pair-end reads. It was designed to place non-overlapping nucleosomes using extra lenght information present in pair-end data-sets.
+PuFFIN is a command line tool for accurate placing of the nucleosomes based on the pair-end reads. It was designed to place non-overlapping nucleosomes using extra length information present in pair-end data-sets.
 
 The tool is written in python. There are no special requirements except for python2.7+.
 
