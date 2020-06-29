@@ -26,14 +26,14 @@ def Run(fileName, Y):
 
 def main():
     fileName = sys.argv[1]
-    if (os.path.isfile('Q.var')):
-        Y = loadVar('Q.var')
+    if (os.path.isfile('Q_ext.var')):
+        Y = loadVar('Q_ext.var')
     else:
         import pregenerateCurves
         print("No curves file found, trying to create one (this step is suppose to take place only once)")
-        pregenerateCurves.Run()
-        if (os.path.isfile('Q.var')):
-            Y = loadVar('Q.var')
+        pregenerateCurves.Run('Q_ext.var', 60)
+        if (os.path.isfile('Q_ext.var')):
+            Y = loadVar('Q_ext.var')
         else:
             print("Something went wrong with loading curve file. Try running >python pregenerateCurve.py")
     print("Looking for input file")
