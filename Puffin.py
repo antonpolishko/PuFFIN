@@ -66,7 +66,7 @@ def ReadBED(fileName):
     try:
         # read the input bam file that contains the whole experiment
         with open(fileName, 'rU') as inputFile:
-            print "Starting process  file", fileName
+            print( "Starting process  file", fileName )
             sizes = []
             point = []
             for line in inputFile:
@@ -86,10 +86,10 @@ def ReadBED(fileName):
                     if (~flag):
                         point.append([posLeft, readSize, direction])
                         sizes.append(readSize)
-        print "Number of points ", len(point)
+        print( "Number of points ", len(point))
         return np.array(point), sizes
     except:
-        print "Can't read input file", fileName
+        print( "Can't read input file", fileName )
 
 
 def saveVar(var, fileName):
@@ -101,9 +101,9 @@ def saveVar(var, fileName):
     try:
         with open(fileName, 'wb') as fout:
             dump(var, fout, -1)
-            print "saving successful"
+            print( "saving successful")
     except Exception:
-        print "Smth went wrong during dumping..."
+        print( "Smth went wrong during dumping...")
 
 
 def loadVar(fileName):
@@ -114,10 +114,10 @@ def loadVar(fileName):
     try:
         with open(fileName, 'rb') as fin:
             A = pickle.load(fin)
-            print "reading done...", fileName
+            print( "reading done...", fileName)
         return A
     except Exception:
-        print "Loading failed ...", fileName
+        print( "Loading failed ...", fileName)
         return float('nan')
 
 
@@ -171,7 +171,7 @@ def BuildSignals(dataChr, curves=None):
         if delta < 1000:
             for i in range(numCurves):
                 signal[i][lxS:lyS + 1] += curves[i][x[1]][lxY:1000 - lyY]
-    print 'Signal populated, now normalazing'
+    print('Signal populated, now normalazing')
     for i in range(numCurves):
         signal[i] = signal[i] * 1000000. / count
     return signal
@@ -243,7 +243,7 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
     and calculates the scores for nucleosomes as a number of points beloning to each nucleosome
     """
     points = inputPoints[:, 0] + 0.5 * inputPoints[:, 1]
-    print len(points)
+    print(len(points))
     res = []
     count = 0
     for nuc in nucs:
@@ -257,7 +257,7 @@ def NucsScores(nucs, inputPoints, numPointsTreshold=0, adjustScore=1):
                 count += score
                 res.append(temp)
             except Exception:
-                print "bad"
+                print("bad")
                 pass
     return np.array(res)
 
@@ -282,7 +282,7 @@ def NucsAdjust(nucs, inputPoints):
                 temp[0] = np.mean(setOfPoints)
                 res.append(temp)
             except Exception:
-                print "bad"
+                print("bad")
                 pass
         if len(setOfPoints2) > 0:
             try:
@@ -290,7 +290,7 @@ def NucsAdjust(nucs, inputPoints):
                 temp[0] = np.mean(setOfPoints2)
                 res2.append(temp)
             except Exception:
-                print "bad"
+                print("bad")
                 pass
     return np.array(res), np.array(res2)
 
@@ -354,7 +354,7 @@ def NucPlace(listOfNucsIn, listOfSizes=None):
             Nucleos.append([mu, size, level])
         # update current position
         curPosition = mu + 140  # we add some offset
-        # print curPosition, len(Nucleos), listOfNucs[0][0], listOfNucs[15][0]
+        # print(curPosition, len(Nucleos), listOfNucs[0][0], listOfNucs[15][0])
         curLevel = level
         if curPosition < chrSize or len(listOfNucs[0]) > 0:
             flagRun = True
